@@ -71,6 +71,8 @@ class Lock:
         if not self.mine and not force:
             raise LockError("Attempted to release a lock that wasn't mine, can set `force=True`")
         pid = self.path.read_text()
+        os.remove(self.path.as_posix())
+        return pid
 
     def wait(self, dt=0.01):
         """
@@ -87,7 +89,7 @@ class Lock:
     def __enter__(self):
         self.acquire()
 
-    def __exit__(self):
+    def __exit__(self, exception_type, exception_value, traceback):
         self.release()
 
     def __bool__(self):
