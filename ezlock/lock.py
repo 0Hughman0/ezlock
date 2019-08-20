@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import time
+import atexit
 
 class LockError(Exception):
     pass
@@ -8,16 +9,18 @@ class LockError(Exception):
 
 class Lock:
 
-    def __init__(self, path='.lock'):
+    def __init__(self, path='.lock', release_on_exit=False):
         """
         Lock object that keeps track of a file found at `self.path`. If there is a file found at `self.path`, the lock is considered... locked!
         
-        Arguments
-        =========
+        Parameters
+        ==========
         path : str, Path
             path to write the lock file to (will be converted to `pathlib.Path`). Defaults to '.lock'.
         """
         self.path = Path(path)
+        self._do_release_on_exit = None
+        self.release_on_exit = release_on_exit
 
     @property
     def name(self):
@@ -43,11 +46,16 @@ class Lock:
         except FileNotFoundError:
             raise LockError("Attempted to check ownership on lock that doesn't exist")
 
-    def acquire(self):
+    def acquire(self, force=False):
         """
         Create the lock-file, and stamp on it that it was made by me!
+        
+        Parameters
+        ==========
+        force : bool
+            If the lock already exists, force switching ownership to me so `self.mine==True`. Defaults to False
         """
-        if self.locked:
+        if self.locked and not force:
             raise LockError("Attempted to acquire on already locked lock!")
         self.path.write_text(self.name)
 
@@ -57,12 +65,17 @@ class Lock:
         
         Will get upset if the lock isn't `self.mine` but can override by setting `force=True`.
         
-        Arguments
-        =========
+        Parameters
+        ==========
         force : bool
             force releasing the lock, even if not `self.mine`. (default `False`)
         rerelease : 
             when `True` will not complain if attempting to release and already released lock. (default `True`)
+
+        Returns
+        =======
+        name : str
+            the name of the lock that was just released (None if no lock was released)
         """
         if not self.locked:
             if not rerelease:
@@ -70,16 +83,28 @@ class Lock:
             return None
         if not self.mine and not force:
             raise LockError("Attempted to release a lock that wasn't mine, can set `force=True`")
-        pid = self.path.read_text()
+        name = self.path.read_text()
         os.remove(self.path.as_posix())
-        return pid
+        return name
+        
+    @property
+    def release_on_exit(self):
+        return self._do_release_on_exit
+
+    @release_on_exit.setter
+    def release_on_exit(self, do):
+        if do:
+            atexit.register(self.release)
+        else:
+            atexit.unregister(self.release)
+        self._do_release_on_exit = do
 
     def wait(self, dt=0.01):
         """
         Wait until lock is released.
         
-        Arguments
-        =========
+        Parameters
+        ==========
         dt : float
             how long to wait between checking for `self.locked`
         """

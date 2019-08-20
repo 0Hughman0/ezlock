@@ -1,6 +1,10 @@
 # ezlock
 
-Super simple file-based locking:
+Super simple file-based locking.
+
+    pip install ezlock
+
+For a 1 time process:
 
     # first.py
     from ezlock import Lock
@@ -9,8 +13,7 @@ Super simple file-based locking:
     with Lock():
         print("I got the lock and I'm keeping it for 20s")
         time.sleep(20)
-        
-    
+
 and
 
     # second.py
@@ -30,4 +33,4 @@ running
     
 Lock files have an owner. A lock can check if it owns a file with `lock.mine`. `Lock`s will only release a lock that's not theirs if it's forced i.e. `lock.release(force=True)`.
 
-You can wait for a lock to be released with `Lock.wait()`
+You can wait for a lock to be released with `lock.wait()`

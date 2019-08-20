@@ -1,3 +1,3 @@
 __version__ = '0.1.3'
 
-from .lock import Lock
+from .lock import Lock, LockError
