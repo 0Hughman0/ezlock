@@ -5,14 +5,15 @@ import time
 class LockError(Exception):
     pass
 
+
 class Lock:
 
     def __init__(self, path='.lock'):
         """
         Lock object that keeps track of a file found at `self.path`. If there is a file found at `self.path`, the lock is considered... locked!
         
-        Parameters
-        ==========
+        Arguments
+        =========
         path : str, Path
             path to write the lock file to (will be converted to `pathlib.Path`). Defaults to '.lock'.
         """

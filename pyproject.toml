@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "ezlock"
-version = "0.1.1"
-description = ""
+version = "0.1.2"
+description = "Super simple file based locking"
 authors = ["0Hughman0 <rammers2@hotmail.co.uk>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["locking", "process", "simple"]
+homepage="https://github.com/0Hughman0/ezlock"
 
 [tool.poetry.dependencies]
 python = "^3.5"
